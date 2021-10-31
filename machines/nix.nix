@@ -14,7 +14,9 @@
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.supportedFilesystems = [ "zfs" ];
 
+  networking.hostId = "0d6e4c75";
   networking.hostName = "nix"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   
@@ -110,12 +112,12 @@
   #  masterAddress = "nix.lab.tilmonedwards.com";
   #};
 
-  services.k3s = {
-    enable = true;
-    role = "server";
-    extraFlags = toString [
-    ];
-  };
+  #services.k3s = {
+  #  enable = true;
+  #  role = "server";
+  #  extraFlags = toString [
+  #  ];
+  #};
 
   # virtualisation.containerd.enable = true;
 
@@ -129,30 +131,28 @@
 
 
   # Hardware configuration
-  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
-  boot.initrd.kernelModules = [ "dm-snapshot" ];
-  boot.initrd.luks.devices.luksroot = {
-    device = "/dev/disk/by-uuid/55078296-3920-476d-8b7f-1cf6bde224b2";
-    preLVM = true;
-    allowDiscards = true;
-  };
-
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
+  boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/e9c61ff3-cdeb-4101-9e8c-e6b3b6f7cbe6";
-      fsType = "ext4";
-      options = [ "noatime" "nodiratime" "discard"];
+    { device = "rpool/root/nixos";
+      fsType = "zfs";
+    };
+
+  fileSystems."/home" =
+    { device = "rpool/home";
+      fsType = "zfs";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/EB7C-A877";
+    { device = "/dev/disk/by-uuid/5887-B0EB";
       fsType = "vfat";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/2a578972-07da-454c-8d5d-08da253595c7"; }
+    [ { device = "/dev/disk/by-uuid/9ec34d24-fef1-44f5-9048-252fe4785c1d"; }
     ];
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
